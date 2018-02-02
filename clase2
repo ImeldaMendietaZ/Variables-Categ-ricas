@@ -1,0 +1,80 @@
+# ---- Ejercicio 1 --- Clase 2
+10+2
+b <- 10+2
+
+install.packages("readxl")
+library("readxl")
+
+climate <- read_excel("C:/Users/USUARIO/Documents/climate.xlsx")
+
+rm(b)
+
+head(climate)
+arrange(climate, sun )
+ 
+install.packages("tidyverse")
+library("tidyverse")
+
+install.packages("dplyr")
+library("dplyr")
+
+help("arrange")
+??arrange
+# Para XLConnect
+#library(XLConnect)
+# df <- readWorksheetFromFile("climate.xlsx", sheet = 1)
+
+set.seed(50)
+xVect <- sample(0:999, 250, replace= T)
+xVect
+
+yVect <- sample(0:999, 250, replace=T)
+yVect
+length(yVect)
+length(xVect)
+
+xVect[2]
+sin(0)
+cos(0)
+
+d <- sin(xVect)
+head(d)
+
+d <- sin(yVect[-length(yVect)])
+d
+head(sin(yVect[-length(yVect)]))
+head(yVect)
+
+#g <- sin(xVect[-length(xVect)])
+#head(sin(xVect[-length(xVect)]))
+#head(xVect)
+
+xVect[-1] # sirve para quitar la última entrada
+
+e <- cos(xVect[-1])
+
+f <- d/e
+f
+c(2, 4, 6)/c(2,2,2)
+head(f)
+
+
+#****** 2° ejercicio*****
+
+help(outer)
+x <- 1:9
+x
+names(x)<- x
+names(x)
+x*x
+x%o%x
+
+y <- 2:8; names(y) <- paste(y , ":" , sep="")
+outer(y, x, "^")
+
+outer(y, x, "+")
+
+x <- 0:4
+outer(x,x,"+")
+
+help("rep") # buscar para poder hacer la tarea 
