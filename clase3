@@ -1,0 +1,38 @@
+# ***** CLase 3****
+tabla1 <- read.table("tabla1.txt", header = F )
+View(tabla1)
+
+tabla2 <- read.table("https://www.nrc.gov/reading-rm/doc-collections/event-status/reactor-status/PowerReactorStatusForLast365Days.txt", 
+header = T, sep = "|")
+View(tabla2)
+tabla3 <- read.table("tabla3.txt", header = F, sep="/", strip.white =   T, na.strings = "VACIO")
+View(tabla3)
+
+tabla4 <- read.csv("tabla4.csv", header = T, quote = "\"", stringsAsFactors = T, strip.white = T)
+View(tabla4)
+tabla5 <- read.csv2("tabla5.csv2", header=F, quote = "\"", row.names = c("M","N", "O", "P","Q"),
+                    col.names = c("X", "y", "Z","A", "B"), fill = T, strip.white = T, stringsAsFactors = T)
+View(tabla5)
+
+install.packages("XLConnect")
+library(XLConnect)
+
+climate <- readWorksheetFromFile("climate.xlsx", sheet=1)
+View(climate)
+
+climate2 <- readWorksheetFromFile("climate.xlsx", sheet=1, startRow=26, endCol=4)
+View(climate2)
+
+climate3 <- readWorksheetFromFile("climate.xlsx", sheet=1, region= "A1:G13")
+View(climate3)
+
+wb <- loadWorkbook("PortfoliobyLoanStatus.xls")
+View(wb)
+direcLoan <- readWorksheet(wb, sheet=1, startRow=6)
+View(direcLoan)
+
+install.packages("xlsx")
+library("xlsx")
+
+climate4 <- read.xlsx("climate.xlsx", sheetIndex = 1)
+View(climate4)
