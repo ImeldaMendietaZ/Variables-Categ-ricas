@@ -1,0 +1,74 @@
+# ******* CLase 5 
+# continuación del data.frame
+
+subset(planetas_df, diametro >9)
+
+posiciones <- order(planetas_df$diametro)
+planetas_df[posiciones,]
+
+# escritores 
+
+Died.At <- c(22,40,72,41)
+Writer.At <- c(16,18,36,36)
+First.Name <- c("John", "Edgar", "Walt", "Jane")
+Second.Name <- c("Doe", "Poe", "Whitman", "Austen")
+Sex <- c("MALE", "MALE", "MALE", "FEMALE")
+Date.Of.Death <- c("2015-05-10", "1849-10-07", "1892-03-26","1817-07-18")
+writers_df <- data.frame(Died.At, Writer.At, First.Name,Second.Name, Sex, Date.Of.Death)
+
+writers_df2 <- data.frame(Died.At, Writer.At, I(First.Name),I(Second.Name), Sex, Date.Of.Death) 
+# para convertir en cadena de caracteres los que aparecian como factores
+help("as.Date")
+writers_df3 <- data.frame(Died.At, Writer.At, I(First.Name),I(Second.Name), Sex, as.Date(Date.Of.Death, "%Y-%m-%d")) 
+names(writers_df3)
+names(writers_df3) <- c("Age.at.Death", "Age.As.Writer", "Name", "Surname", "Gender", "Death")
+rownames(writers_df3) <- c("ID1", "ID2", "ID3", "ID4")
+dim(writers_df3)
+dim(writers_df3)[1] # saber el número de filas
+dim(writers_df3)[2] # saber el númeor de columnas
+nrow(writers_df3)
+ncol(writers_df3)
+length(writers_df3) # solo es el número de columnas
+
+# funciones a un data.frame
+
+Ages <- writers_df3[,1:2]
+Ages
+apply(Ages, 2, median) # lo hace por columnas
+apply(Ages, 1, median) # lo hace por filas
+
+apply(Ages, 2, mean)
+
+ab <- data.frame() # data.frame vacío 
+Ages <- numeric()
+Names <- character()
+ID <- integer()
+Gender <- factor()
+Date <- as.Date(character())
+ab <- data.frame(Ages, Names, ID, Gender, Date)
+#ab$Ages <- c(34,56,24,57,21,22)  # para agregar datos
+
+writer_names_df <- writers_df3[1:4, 3:4]
+(writer_names_df2 <- writers_df3[1:4, c("Name", "Surname")])
+
+str(writer_names_df)
+str(writer_names_df2)
+
+(jane_writers_df <- subset(writers_df3, Name == "Jane"))
+(forty_writers_df <- writers_df3[grep("4", writers_df3$Age.at.Death), ])
+
+subset(writers_df3, Age.at.Death >= 40)
+subset(writers_df3, Age.at.Death >= 40 & Age.at.Death < 50)
+
+# eliminar filas y/o columnas
+
+writers_df3$Age.at.Death <- NULL
+writers_df3[1,3] <- NULL # nos causa error
+writers_df3[1,3] <- NA  # elimina solo un dato en especifico
+writers_df3[1,] <- NA # se elimina toda una fila
+
+filas_a_mantener <- c(F,T,F,T)
+limited_writers_df <- writers_df3[filas_a_mantener, ]
+less_writers_df <- writers_df3[!filas_a_mantener, ]
+
+
