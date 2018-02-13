@@ -1,0 +1,127 @@
+# *** ~ clase 6 ~ ***
+
+# comenzaremos con variables categóricas que en R son mostradas como factor
+# variables categoricas hay jeraraquia entre estas variables
+# pueden ser comparables solo por el hecho d eque tiene  jeraraquia
+
+vector_sexo <- c("Mujer", "Hombre", "Mujer", "Mujer", "Hombre")
+class(vector_sexo)
+factor_vector_sexo <- factor(vector_sexo)
+factor_vector_sexo
+
+vector_animales <- c("Perro", "Caballo", "Koala", "buitre")
+vector_animales
+(factor_vector_animales <- factor(vector_animales))
+
+vector_temperatura <- c("Alta", "Baja", "Alta", "Baja", "Media")
+(factor_vector_temperatura <- factor(vector_temperatura, order = T, levels =c("Baja", "Media", "Alta")))
+
+vector_encuesta <- c("H", "M", "M", "H","H")
+factor_vector_encuesta <- factor(vector_encuesta)
+levels(factor_vector_encuesta) <- c("Hombre", "Mujer")
+factor_vector_encuesta
+
+summary(factor_vector_encuesta)
+
+Hombre <- factor_vector_encuesta[1]
+Mujer <- factor_vector_encuesta[2]
+Hombre > Mujer # da error
+
+a <- factor_vector_temperatura[1]
+b <- factor_vector_temperatura[2]
+a < b
+
+vector_velocidad <- c("Media", "Baja", "Baja", "Media", "Alta")
+factor_vector_velocidad <- factor(vector_velocidad, ordered =T, levels = c("Baja", "Media", "Alta") )
+factor_vector_velocidad
+summary(factor_vector_velocidad)
+da2 <- factor_vector_velocidad[2] ; da5 <- factor_vector_velocidad[5]
+da2>da5
+
+mi_vector <- 1:10
+mi_matriz <- matrix(1:9, ncol = 3)
+View(mtcars)
+mi_df <- mtcars[1:10,]
+# definir una lista
+mi_lista <- list(mi_vector, mi_matriz, mi_df)
+mi_lista
+
+
+pel <- "El resplandor"
+act <- c("Jack Nicholson", "Shelley Duvall" , "Danny Lloyd", "Scatman Crothers", "Barry Nelson")
+puntuaje <- c(4.5, 5,5)
+fuente <- c("IMDB1", "IMDB2", "IMDB3")
+comentarios <- c("Mejor Pelicula de Terror que he visto", "Una Pelicula Brillante de Stanley Kubrik", "Una obra maestra del terror psicologico")
+res <- data.frame(puntuaje, fuente, comentarios)
+res
+View(res)
+lista_resplandor <- list(pel, act,res)
+lista_resplandor
+lista_resplandor[[1]] # para tener acceso aun dato en particular se usa el doble corchete [[]]
+lista_resplandor[1]
+lista_resplandor[[2]]
+lista_resplandor[[2]][2] # para tener acceso a un solo elemento en particular
+lista_completa_resplandor <- c(lista_resplandor , estreno=1980)
+lista_completa_resplandor
+
+nueva_lista <- list(titulo = lista_completa_resplandor[[1]], reparto = lista_completa_resplandor[[2]], reseña = lista_completa_resplandor[[3]], estreno = lista_completa_resplandor[[4]])
+nueva_lista
+
+nueva_lista$reparto[5]
+
+
+
+
+# ***************** GRÄFICAs 
+
+
+# se necesita instalar:  gplots, venneuler, manipulate, RColorBrewer
+
+install.packages("gplots")
+install.packages("venneuler")
+library("gplots")
+library(venneuler)
+
+# primer grupo de bajo nivel
+# 2do grupo agregan informacion extra 
+# 3er grupo funciones interactivas hacen intercativas las graficas
+demo(graphics)
+x11()  # Muestra el grafico en grande 
+
+# ejemplos sencillos 
+ x <- seq(10,870,10)
+x
+plot(x)
+set.seed(13)
+x<- -30:30
+y <- 3*x +2 +rnorm(length(x), sd=20)
+plot(x,y)
+
+help("airquality")
+airquality[1:2,]
+plot(airquality)
+View(airquality)
+par(mfrow=c(2,1))
+
+plot(airquality$Ozone, airquality$Temp, main="airquality$Ozone, airquality$Temp")
+Ozone # no muestra los valores 
+attach(airquality) # perimite los valores de airquality
+plot(Ozone, Temp, main = "plot(Ozone, Temp)") # muestra ambas graficas ozone y temp
+detach(airquality)
+
+boxplot(airquality)
+x11()
+boxplot(airquality)
+par(mfrow= c(2,2))
+boxplot(airquality$Ozone ~ airquality$Month, col= 2:6, xlab= "month", ylab="ozone", sub="boxplot(airquality$Month)")
+title ("Graficas equivalentes")
+plot(factor(airquality$Month), airquality$Ozone, col= 3:7, xlab= "Mes", ylab=" Ozono ", sub= "plot(factor(airquality$Month), airquality$Ozone")
+plot(airquality$Ozone ~ factor(airquality$Month), col= 2:6, xlab= "month", ylab="ozone", sub="boxplot(airquality$Month)")
+
+help("tapply") # aplica un afuncion celda por celda
+x11()
+
+MesOzMedia <- tapply(airquality$Ozone, factor(airquality$Month), mean, na.rm=T)
+par(mfrow =c(1,2)) # divide la region d egraficacion
+barplot(MesOzMedia, col = 7:11, mean= "Media del Ozono por mes")
+pie(MesOzMedia, col=rainbow(5))
