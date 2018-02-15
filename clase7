@@ -1,0 +1,151 @@
+# *** ~ Clase 7 ~ ***
+
+library (gplots)
+library(venneuler)
+x11()
+
+help(rt)
+xt <- rt(100,3) # valors aleatorios dsitribuidos como una t-student
+xt
+hist(xt)
+plot(density(xt))
+sample(LETTERS,10)
+help(lapply) # sirve para definir listas
+(tt <- lapply(1:3, function(x) sample(LETTERS,10)))
+View(tt)
+names (tt)<- c("Lucia", "Katia", "Elena")
+tt
+
+venn(tt) # Hace un diagrama de venn y cada elemento lo toma como un conjunto
+
+tt <- lapply(1:4, function(x) sample(letters,10))
+venn(tt)
+names(tt) <- paste("Lista", 1:4) # genera una cadena de caracteres paraa cada elemento o conjunto que se crea
+venn(tt)
+
+# Ahora haciendo uso de la libreria venneuler
+
+IntersectMatrix <- function(tt){ allElements <- unique(unlist(tt)) 
+outMat <- sapply(1:length(tt),function(i) allElements%in%tt[[i]])
+rownames(outMat) =allElements
+colnames(outMat) = names(tt)
+return(outMat)}
+
+xx <- IntersectMatrix(tt)
+print(xx[1:4,])
+plot(venneuler(xx))
+
+(tt <- lapply(1:5, function(x) sample(LETTERS,15)))
+View(tt)
+names(tt) <- sapply(tt, function(x) paste(sort(x), collapse = ""))
+help(collapse)
+??collapse
+venn(tt)
+help("plot")
+plot(xx)
+plot(xt, axes=F) # axes es para poner o quitar los ejes, sino se especifica nada R los grafica
+plot(xt, type = "l") # para el tipo de linea, o puntos (p)
+plot(xt, type = "b") # da lineas y puntos 
+plot(xt, type = "o") # podemos ver las intersecciones
+plot(xt, type= "h") #para rectas verticales  
+plot(xt,type= "n") # no despliega los puntos
+plot(xt, type= "h", xlab="Eje x", ylab = "Eje y", main= "Título aquí" , sub = "Subtitulo") 
+# xlab o ylab es para poner etiquetas
+# main es para titulo
+# sub es para un subtitulo
+View(cars)
+attach(cars)
+speed
+plot(cars, type= "n", xlab="Velocidad(mph)", ylab= "Distancia(ft)" )
+points(speed[speed<15], dist[speed<15], pch="s", col="green")
+points(speed[speed>=15], dist[speed >=15], pch="f", col="blue")
+
+lines(lowess(cars), col="red")
+legend(5,120,pch=c("s", "f"), col=c("blue", "gray"), legend = c("Lento", "Rápido"))
+
+
+
+
+# *** ~ Como definir funciones ~ ***  
+#de farenheit a celsius
+F_a_C <- function(temp_F) 
+  {
+  temp_C <- (5/9)*((temp_F)-32) 
+  return(temp_C)
+  }
+F_a_C(212) # punto de ebullición del agua 
+F_a_C(32) #punto de cogelación del agua
+
+ # de celsius a KElvin
+
+C_a_K <- function(temp_C) 
+{
+  temp_K <- temp_C + 273.15
+  return(temp_K)
+}
+C_a_K(45)
+
+# de Kelvin a Celsius 
+
+F_a_K <- function(temp_F) 
+{
+  temp_C <- F_a_C(temp_F)
+  temp_K <- C_a_K(temp_C)
+  return(temp_K)
+}
+
+
+envolver <- function(original, envoltorio)
+{
+  respuesta <- c(envoltorio, original, envoltorio)
+  return(respuesta)
+}
+
+x <- c("Este mensaje esta entre asteriscos")
+y <- c("***")
+y
+
+
+exterior <- function(v)
+{
+  primero <- v[1]
+  ultimo <- v[length(v)]
+  respuesta <- c(primero, ultimo)
+  return(respuesta)
+}
+
+exterior(1:10)
+
+
+input_1 = 20
+miSuma <- function(input_1, input_2=10)
+{
+  output<-input_1+input_2
+  return(output)
+}
+miSuma(input_1=1,3) #
+miSuma(3)
+miSuma(input_1 = 15, input_2 = 3)
+
+
+centrar<-function(datos,centro)
+{
+  nuevos_datos<-(datos-mean(datos))+centro
+  return(nuevos_datos)
+}
+
+z <- c(0,0,0,0,0)
+centrar(z,3)
+
+library(xlsx)
+
+
+
+
+# ~ ******** TAREA  *********** ~
+
+# hacer una función que tome como argumento el nombre de un archivo y que al ejecutar una funcion despliegue 3 graficas
+# aplicar  a los archivos que envio
+# tomar las columnas (minimo, maximo, media) y graficar
+
+# vector de minimos..... 
