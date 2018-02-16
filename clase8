@@ -1,0 +1,69 @@
+# *** ~ TaRea ~ *** y ~ clase 8 ~ 
+
+a<- "C:/Users/USUARIO/Documents/inflammation-01.csv"
+archivo <- function(a)
+{
+  datoss<- read.csv(a) 
+  minn <- apply(datoss,2,min)
+  maxx <- apply(datoss,2,max)
+  medd <- apply(datoss,2,mean)
+  x11()
+  par(mfrow=c(3,1))
+  plot(maxx,type = "p", xlab="Eje x", ylab = "Eje y", main= "Máximo" ,pch = 0, col= "deeppink3")
+  plot(minn,type = "p", xlab="Eje x", ylab = "Eje y", main= "Mínimo" ,pch = 8, col= "chartreuse4")
+  plot(medd,type = "p", xlab="Eje x", ylab = "Eje y", main= "Media" ,pch = 10, col= "deepskyblue" )
+  
+  
+}
+help("apply")
+
+help("plot")
+archivo(a)
+
+
+
+#   Solucion
+
+analizar <- function(filename)
+{
+  #   Grafciar media, minimo y maximo por columnas
+  #   Input es una cadena de caracteres de un archivo csv
+  datos <- read.csv(file = filename, header = F)
+  media_inf <- apply(datos,2,mean)
+  max_inf <- apply(datos,2,max)
+  min_inf <- apply(datos,2,min)
+  x11()
+  par(mfrow = c(2,2))
+  plot(media_inf, sub = "Media")
+  plot(max_inf, sub = "Maximo")
+  plot(min_inf, sub = "Minimo")
+}
+
+analizar("inflammation-01.csv")
+
+
+
+
+
+# ejercicio 7 de la practica 3 
+f_divisores <- function (n)
+{
+  i <- 2
+  contador <- 0
+  while (i <= n/2) {
+    if (n%%i == 0) # residuo de una diferencia o bien  modulo
+    {
+      contador <- contador+1
+      cat(i, "\n") # para desplegar en la pantalla
+    }
+      i <- i+1
+  }
+  contador 
+}
+
+f_divisores(2)
+
+help("%%")
+
+
+# for(i in 1:length(v))
