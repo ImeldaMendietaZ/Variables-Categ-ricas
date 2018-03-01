@@ -1,0 +1,88 @@
+# clase 9
+title: "Clase10"
+author: "ImeLDa Mendieta Z"
+date: "01 de Marzo de 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+c.table<-array(data = c(251, 48, 34, 5), dim = c(2,2), dimnames =
+list(Primero = c("éxito", "fracaso"),Segundo = c("éxito", "fracaso")))
+list(Primero = c("éxito", "fracaso"), Segundo = c("éxito", "fracaso"))
+c.table
+c.table[1,1] 
+c.table[1,]
+sum(c.table[1,])
+rowSums(c.table)
+pi.hat.table<-c.table/rowSums(c.table)
+pi.hat.table
+# intervalo de wald
+alpha <- 0.05
+pi.hat1 <- pi.hat.table[1,1]
+pi.hat2 <- pi.hat.table[2,1]
+var.wald <- pi.hat1*(1-pi.hat1)/ sum(c.table[1,]) + pi.hat2*(1-pi.hat2)/sum(c.table[2,])
+pi.hat1 - pi.hat2 + qnorm(p=c(alpha/2, 1-alpha/2))* sqrt(var.wald )# qnorm para el valor de z
+# intervalo de agresti y caffo
+pi.tilde1 <- (c.table[1,1]+1)/sum(c.table[1,]+2)
+pi.tilde2 <- (c.table[2,1]+1)/(sum(c.table[2,]+2))
+var.AC <- pi.tilde1*(1-pi.tilde1)/(sum(c.table[1,])+2) + pi.tilde2*(1-pi.tilde2)/(sum(c.table[2,])+2)
+pi.tilde1-pi.tilde2+ qnorm(p= c(alpha/2, 1-alpha/2))* sqrt(var.AC)
+
+```
+# otra forma dde calcular intervalos
+
+w1 <- 251
+n1 <- 285
+w2 <- 48
+n2 <- 53
+# para el intervalo de wald
+pi.hat1 <- w1/n1
+pi.hat2 <- w2/n2
+var.wald <- pi.hat1*(1-pi.hat1)/n1 + pi.hat2*(1-pi.hat2)/n2
+pi.hat1 - pi.hat2 + qnorm(p=c(alpha/2, 1-alpha/2))* sqrt(var.wald )
+```{r}
+alpha <- 0.05
+pi1 <- 0.2
+pi2 <- 0.4
+n1 <-10
+  n2 <-10
+  
+w.all <- expand.grid(w1= 0:n1, w2 = 0:n2)
+# w.all
+pi.hat1 <- (0:n1)/n1
+pi.hat2 <- (0:n2)/n2
+pi.hat.all <- expand.grid(pi.hat1 =pi.hat1,pi.hat2 =pi.hat2 )
+#pi.hat.all
+# hacemos uso de una binomial
+prob.w1 <- dbinom(x = 0:n1, size = n1, prob = pi1 )
+prob.w2 <- dbinom(x = 0:n2, size = n2, prob = pi2 )
+prob.all <- expand.grid(prob.w1 = prob.w1, prob.w2 = prob.w2)
+#prob.all
+pmf <- prob.all$prob.w1*prob.all$prob.w2 # funcion masa de probabilidad
+pmf
+
+# P(W1 =w1, W2 =w2)
+head(data.frame(w.all, pmf = round(pmf, 4))) # vemos las primeras 6 observaciones
+tail (data.frame(w.all, pmf = round(pmf, 4))) # vemos las ultimas 6 observaciones
+```
+```{r}
+# Nivel de confianza verdadero para el intervalo de Wald
+var.wald <-  pi.hat.all[,1]*(1-pi.hat.all[,1])/n1 + pi.hat.all[,2]*(1-pi.hat.all[,2])/n2
+lower <- pi.hat.all[,1] - pi.hat.all[,2]- qnorm(p= 1-alpha/2)*sqrt(var.wald)  
+upper<- pi.hat.all[,1] - pi.hat.all[,2] + qnorm(p= 1-alpha/2)*sqrt(var.wald)  
+save <- ifelse(test = pi1-pi2 > lower, yes = ifelse(test = pi1- pi2 < upper, yes =1, no= 0),no =0) # guardamos entradas 1 y 0
+(sum(save*pmf)) # sirve para comprobar y obeterner el verdadero nivel de confianza con respecro al que se habia palnteado anteriormente
+```
+# nivel de confianza verdadero para el intervalo de agresti coff
+pi1tilde <- (0:n1+1)/(n1+2)
+pi2tilde <- (0:n2 +1)/ (n2+2)
+pi.all.tilde <- expand.grid(pi1tilde =pi1tilde , pi2tilde =pi2tilde)
+var.ac <- pi.all.tilde[,1]*(1-pi.all.tilde[,1])/(n1+2) + pi.all.tilde[,2]*(1-pi.all.tilde[,2])/(n2+2)
+lower.ac <- pi.all.tilde[,1] - pi.all.tilde[,2]- qnorm(p= 1-alpha/2)*sqrt(var.ac)  
+upper.ac<- pi.all.tilde[,1] - pi.all.tilde[,2] + qnorm(p= 1-alpha/2)*sqrt(var.ac)  
+save.ac <- ifelse(test = pi1-pi2 > lower.ac, yes = ifelse(test = pi1- pi2 < upper.ac, yes =1, no= 0),no =0) 
+(sum(save.ac*pmf)) 
