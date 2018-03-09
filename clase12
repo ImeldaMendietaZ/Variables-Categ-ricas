@@ -1,0 +1,63 @@
+---
+title: "clase12"
+author: "ImeLDa Mendieta Z"
+date: "9 de marzo de 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# ****** ~ Modelos Lineales ~ ******
+# el modelo es saturado si hay tantos parametros como observaciones, los vaolores que optimizan los valores de una función también optimizan a la función. 
+
+```{r}
+setwd("C:/Users/USUARIO/Documents/")
+x11(width = 7, height = 6, pointsize = 12)
+curve(expr = x^2, xlim = c(-1,2), col= "red", main = " Gráfica de f(x) = x^2", xlab = "x", ylab = "f(x)", panel.first = grid(col= "gray", lty = "dotted"))
+
+# grafica para un modelo de regresion logistica
+x11(width = 7, height = 6, pointsize = 12)
+par(mfrow= c(1,2))
+beta0 <- 1
+beta1 <- 0.5
+curve(expr = exp(beta0+beta1*x)/(1+ exp(beta0+beta1*x)), xlim = c(-15, 15), col = "black", main = expression(pi == frac(e^{1-0.5*x[1]}, 1+e^{1-0.5*x[1]})),xlab = expression(x[1]), ylab = expression(pi)  )
+curve(expr = exp(beta0+beta1*x)/(1+ exp(beta0+beta1*x)), xlim = c(-15, 15), col = "black", main = expression(pi == frac(e^{1+0.5*x[1]}, 1+e^{1+0.5*x[1]})),xlab = expression(x[1]), ylab = expression(pi)  )
+
+placekick <- read.csv("C:/Users/USUARIO/Documents/Placekick.csv")
+#placekick <- read.table(file = "Placekick.csv", header = T, sep = ",")
+View(placekick)
+tail(placekick) # da los ultimos 6 valores
+placekick
+# como estimar un modelo
+mod.fit <- glm(formula = good ~ distance, family = binomial(link = logit), data = placekick  ) # glm modelo lienal generalizado; family es para saber que modleo queremos ajustar
+mod.fit
+names(mod.fit)
+mod.fit$coefficients
+class(mod.fit)
+methods(class = glm)
+methods(class = lm)
+mod.fit2 <- glm(formula = good ~ change + distance, family = binomial(link = logit), data = placekick )
+mod.fit2$coefficients
+summary(mod.fit)
+
+# ahora veremos la matriz de varianza-covarianza
+
+temp <- summary(mod.fit)
+names(temp)
+temp$coefficients
+vcov(mod.fit) # matriz de covarianza
+#vcov(mod.fit2)
+vcov(mod.fit)[2,2]
+
+# obtener los estimados de los parametros
+# función de log-verosimilitud, could use exp(x%*%beta)/(1+exp(x%*%beta)) where X is the design matrix
+logL <- function(beta, x, Y){
+  pi <- exp(beta[1] + beta[2]*x)/(1+exp(beta[1] + beta[2]*x))
+  # Alternatively 
+  sum(Y*log(pi) + (1-Y)*log(1-pi))
+}
+
+logL(beta = mod.fit$coefficients, x= placekick$distance, Y = placekick$good )
+# logL(mod.fit)  # este no funciona le hacen falta argumentos
+
