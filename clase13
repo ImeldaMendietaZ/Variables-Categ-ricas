@@ -1,0 +1,102 @@
+---
+title: "Clase 13"
+author: "ImeLDa Mendieta Z"
+date: "13 de marzo de 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+placekick <- read.csv("C:/Users/USUARIO/Documents/Placekick.csv" )
+View(placekick)
+mod.fit <- glm(good ~ distance, binomial(link = logit), data = placekick ) # logit es la funcion de enlace y lo usamos en este caso porque queremos encontrar el logaritmo de los momios
+mod.fit
+names(mod.fit)
+mod.fit$coefficients
+beta_0.hat <- mod.fit$coefficients[1]
+beta_1.hat <- mod.fit$coefficients[2]
+pi.hat <- mod.fit$fitted.values # valores ajustados
+length(pi.hat)
+length(mod.fit$residuals)  # residuales, diferencias que hay  
+head(mod.fit$residuals) # nos d alos primeros residuales de la diferencia entre lo observado con lo estimado
+  #formula
+   # boundary
+  #aic Criterio de informacion de arcaike
+
+class(mod.fit) # es tanto un caso generalizado como uno normal
+methods(class = glm) # es para dar a conocer los metodos o bien son llmados funciones metodos, que sirven para obtener informacion adicional a la que se obtiene con el summary
+# summary nos da un resumen o un sumario dde lo que sucede
+summary(mod.fit)
+vcov(mod.fit)  # vcov e suna función que nos sirve para obtener la matriz de covarianza
+  #rstudent
+mod.fit2 <- glm(good ~ change + distance, binomial(link = logit), data = placekick)
+mod.fit2
+mod.fit2$coefficients
+#vcov(mod.fit2)
+ # con glm ya tenemos la verosimiltud y maximizada la verosimilitud esto porque los valores que maximizan la fn de verosimilitud son los valores estimados de nuenstros coeficientes
+
+logL <- function(beta, x, Y){
+  pi <- exp(beta[1]+ beta[2]*x)/(1+exp(beta[1]+ beta[2]*x))
+  sum(Y*log(pi) + (1-Y)*log(1-pi))
+}
+
+# Evaluar la funcion de verosimilitud en pi.hat
+logL(mod.fit$coefficients, placekick$distance, placekick$good)
+logLik(mod.fit) # para verificar que la funcion que definimos sea correcta
+reg.mod <- lm(good ~ distance , placekick)
+reg.mod$coefficients
+mod.fit.optim <- optim(reg.mod$coefficients, logL, hessian = T, x= placekick$distance, Y =placekick$good, control = list(fnscale = -1), method = "BFGS")
+names(mod.fit.optim)
+mod.fit.optim$par # parametros con verosimilitud
+mod.fit$coefficients # con solo glm
+mod.fit.optim$value
+mod.fit.optim$values
+mod.fit.optim$convergence
+solve(mod.fit.optim$hessian)  # nos ayuda  a determinar la inversa de una matriz
+vcov(mod.fit)
+beta0.values <- seq(from = -5, to =18, by=0.1)
+beta1.values <- seq(from = -0.65, to =0.25, by=0.01)
+
+count <- 1
+save.logL <- numeric(length(beta0.values)*length(beta1.values))
+for (beta0 in beta0.values) {
+  for (beta1 in beta1.values) {
+    save.logL[count] <- logL(beta = c(beta0, beta1), x= placekick$distance, Y= placekick$good)
+    count <- count+1
+    
+  }
+  
+}
+max(save.logL)
+install.packages("rgl")
+library(rgl)
+open3d()
+
+glX
+
+persp3d(x=beta1.values, y= beta0.values, z= save.logL, xlab = "beta1", ylab = "beta0")
+
+
+
+
+
+```
+
+
+
+```{r}
+# Redefiniendo los datos en forma binomial
+# proporción de éxitos para cada distancia
+w <- aggregate(good ~ distance, placekick, sum)
+n <- aggregate(good ~ distance, placekick, length)
+w.n <- data.frame(distance =w$distance, success = w$good, trials = n$good, proportion = round(w$good/n$good,4))
+head(w.n) # primeros 6
+tail(w.n) # ultimos 6
+mod.fit.bin <- glm(success/trials ~ distance, weights = trials,binomial(link = logit), w.n, trace = T)  # datos de forma binaria
+summary(mod.fit.bin)
+
+
+```
