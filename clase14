@@ -1,0 +1,113 @@
+---
+title: "Clase14"
+author: "ImeLDa Mendieta Z"
+date: "15 de marzo de 2018"
+output: pdf_document
+---
+```{r}
+placekick <- read.table(file ="C:/Users/USUARIO/Downloads/Placekick.csv", header = T, sep = ",")
+mod.fit <- glm(good ~ distance, binomial(link = logit), placekick)
+w <- aggregate(good ~ distance, placekick, sum)
+n <- aggregate(good ~ distance, placekick, length)
+w.n <- data.frame(distance = w$distance, success = w$good, trails = n$good, proportion = round(w$good/n$good, 4))
+mod.fit2  <- glm(good ~ change + distance, binomial(link = logit), placekick)
+library(car) 
+mod.fit2
+anova(mod.fit2, test = "Chisq")
+# hipotesis
+# H0:  logit(pi) = B0+ B1 distance
+# H1: logit(pi)= B0 + B1 Distance
+# lo anteriror fue para hace runa prueba LRT (verosimilitud)
+
+mod.fit.Ho <- glm(good ~ distance, family = binomial(link = logit), placekick)
+anova(mod.fit.Ho, mod.fit2, test = "Chisq")
+# ahora vamos a comparar la sig hipotesis
+# Ho: logit(pi) = Bo
+# Ha: logit(pi) = Bo + B1 change
+mod.fit.Ho <- glm(good ~ 1, family = binomial (link = logit), placekick)
+mod.fit.Ha <- glm(good ~ change, family = binomial (link = logit), placekick)
+anova(mod.fit.Ho, mod.fit.Ha, test = "Chisq")
+names(mod.fit.Ho)
+pi.hat.Ho <- mod.fit.Ho$fitted.values
+pi.hat.Ha <- mod.fit.Ha$fitted.values
+y <- placekick$good
+stat <- -2*sum(y*log(pi.hat.Ho/pi.hat.Ha)+ (1-y)* log((1-pi.hat.Ho)/(1-pi.hat.Ha)))  # -2log(Lambda)
+stat
+pvalues <- 1-pchisq(q= stat, df=1)
+data.frame(stat, pvalues)
+
+# para LRT se usa anova o lo que hizo anteriormente
+
+```
+
+
+```{r}
+# Razón de Momios
+# LRProfile
+mod.fitm <- glm(good ~ distance, family = binomial(link = logit), placekick)
+exp(mod.fitm$coefficients[2]) # si aumentamos un ayarda los momios disminuyen en un 11% 
+exp(-10*mod.fitm$coefficients[2]) # las probabilidades de anotar aumentan en 3 veces si se disminuye 10 yardas para anotar o bien tirar
+# El estimado de los momios de exito de un gol de campo aumentan 3.16 veces por cada 10 yardas que se reduzcan 
+
+# intervalos de confianza para los momios
+
+beta.ci <- confint.default(mod.fitm, parm = "distance", level = 0.95 )  # para el intervalo de wald
+beta.ci
+exp(beta.ci) # intervalo de confinaza cuando C=1
+# disminuye entre 13% y 9% cuando se incrementa la distancia
+exp(10*beta.ci) # si aumentamos la distancia en 10 yardas los momios o la probabibilidad de anotar disminuye entre un  63% y un 73%
+round(exp(10*beta.ci), 2)
+
+round(exp(-10*beta.ci),2) # si disminuimos la distnacia en 10 yardas la probabilidad de anotar es entre 2.68 y 3.72 veces
+as.numeric(rev(round(exp(-10*beta.ci),2)))
+
+
+
+# intervalo de confianza para razon de verosimilitud LRT
+
+beta.ci <- confint(mod.fitm, parm = "distance", level = 0.95)
+beta.ci
+# incremento d elos momios por cada aumento d euna yarda
+as.numeric(rev(round(exp(-10*beta.ci),2)))
+# por cada 10 yardas que reduzcamos la distancia los momios aumentan entre 2.69 y 3.74 veces
+install.packages("mcprofile")
+library(mcprofile)
+k <- matrix(data = c(0,1), nrow = 1, ncol = 2, byrow = TRUE)
+linear.combo <- mcprofile(object = mod.fitm, CM = k)
+ci.log.OR <- confint(object = linear.combo, level = 0.95, adjust = "none")
+names(ci.log.OR)
+as.numeric(rev(round(exp(-10*ci.log.OR$confint),2)))
+
+# caso especial para Bo+ B1x
+
+# Ejemplo: Estimación de la probabilidad de éxito
+# p.hat para una distancia de 20 yardas
+linear.pred <- mod.fitm$coefficients[1]+ mod.fitm$coefficients[2] *20
+linear.pred
+exp(linear.pred )/(1+ exp(linear.pred )) #
+as.numeric(exp(linear.pred )/(1+ exp(linear.pred ))) # a una distancia de 20 yardas hay una probabilidad de acertar el golde campo en  un 97.1 %
+# redefinir
+predict.data <- data.frame(distance =20)
+predict(object = mod.fitm, newdata = predict.data, type = "link") # en terminos del logit
+predict(object = mod.fitm, newdata = predict.data, type = "response") # en terminos de la probabilidad de éxito
+
+head(placekick$distance ==20)
+mod.fitm$fitted.values[3]
+mod.fitm$fitted.values[5]
+
+alpha <- 0.05 
+linear.pred <- predict(object = mod.fitm, newdata = predict.data, type = "link", se =TRUE)
+linear.pred
+pi.hat <- exp(linear.pred$fit )/(1+ exp(linear.pred$fit ))
+pi.hat
+CI.lin.pred <- linear.pred$fit + qnorm(p=c(alpha/2 , 1-alpha/2))*linear.pred$se 
+Ci.pi <- exp(CI.lin.pred)/(1+exp(CI.lin.pred))
+Ci.pi
+round(data.frame(predict.data, pi.hat, lower = Ci.pi[1], upper = Ci.pi[2]),4)
+# interpretación es que hay una probabilidad muy alta
+k <- matrix(data = c(1,20), nrow = 1, ncol = 2)
+k
+linear.combo <- mcprofile(object = mod.fitm, CM = k) # calcular  -2(Lambda)
+linear.combo
+
+```
