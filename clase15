@@ -1,0 +1,98 @@
+---
+title: "clase15"
+author: "ImeLDa Mendieta Z"
+date: "20 de marzo de 2018"
+output: pdf_document
+---
+
+```{r}
+seqa <- 0:8
+seqa
+seqa >3
+setwd("C:/Users/USUARIO/Documents/" )
+challenger <-challenger <- read.table(file = "challenger.csv", header = TRUE, sep = ",")
+challenger
+mod.fit.chal <- glm(O.ring > 0 ~ Temp, family = binomial(link = logit), challenger)
+mod.fit.chal$coefficients
+predict(mod.fit.chal, data.frame(Temp=31), type = 'response')
+
+
+```
+
+
+
+```{r}
+placekick<-read.table(file = "Placekick.csv", header = TRUE, sep = ",")
+
+mod.fit.Ho <- glm(good ~ distance + wind, binomial(link = logit), placekick )
+mod.fit.Ha <- glm(good ~ distance +wind + distance* wind , binomial(link = logit), placekick )
+
+anova(mod.fit.Ho)
+anova(mod.fit.Ha)
+anova(mod.fit.Ho, mod.fit.Ha, test = "Chisq")
+anova(mod.fit.Ho, mod.fit.Ha)
+# en lo anterior se pude decir que se acerca  ala hipotesis alternativa, es decir, la interaccion entre el viento y la distancia es buena
+
+# Razon de momios para viento a una distancia especifica
+beta.hat <- mod.fit.Ha$coefficients[2:4]
+# beta.hat <- mod.fit$coefficients[-1]
+beta.hat
+c <- 1
+distance <- seq(20, 60, by= 10)
+distance
+OR.wind <- exp(c*(beta.hat[2] + beta.hat[3]* distance)) # OR estimado
+cov.mat <- vcov(mod.fit.Ha)[2:4, 2:4] # la notacion o etructura del codigo es asi porque estamos excluyendo al termino independiente osea el primer termino
+# covarianza para beta^_1, beta^_2, beta^_3
+var.log.OR <- cov.mat[2,2] + distance^2 * cov.mat[3,3] + 2* distance* cov.mat[2,3] # var(beta^_2 + distance*beta^_3)
+ci.log.OR.low <- c*(beta.hat[2] + beta.hat[3]* distance) - c* qnorm(p=0.975)*sqrt(var.log.OR)
+ci.log.OR.up <- c*(beta.hat[2] + beta.hat[3]* distance) + c* qnorm(p=0.975)*sqrt(var.log.OR)
+data.frame(OR.wind, OR.low = exp(ci.log.OR.low), OR.up = exp(ci.log.OR.up))
+ # 
+t(distance)
+cbind(distance, data.frame(OR.wind, OR.low =exp(ci.log.OR.low), OR.up = exp(ci.log.OR.up)))
+
+# A una distancia de 50 yardas en condiciones de viento, por cada incremento en un ayarda en la distancia la razon de momios disminuyte entre un 0.04985037 y 0.6473679
+
+
+# a partir de una distancia d e40 yardas se puede pensar en  que si el viento ejerce influencia en una patada dada
+
+
+# que pasa con la razon de momios si disminuimos la distancia en una yarda
+round(data.frame(distance = distance,  OR.hat = 1/OR.wind, OR.low =1/exp(ci.log.OR.up), OR.up = 1/exp(ci.log.OR.low)),2)
+# a mayor distancia de la patada mayor influye el viento 
+
+
+```
+
+
+
+tomando en cuenta qque tenemos mas niveles podemos ejemplificar esto como q= niveles y q-1 indicadores
+```{r}
+# en este ejemplo requerimos de 4 niveles y 3 indicadores que nos mostraran a nuestra fn 
+# logit (pi) = B0 + B1*x1 + B2* x2+ B3*x3
+tomato <- read.table(file = "TomatoVirus.csv", header = TRUE, sep = ",")
+tomato
+# queremos que no exista virus en los tomates en este caso
+# diferencia en la forma de esparcir el virus
+# infest es un avariable categorica con 2 posibilidades d elos metodos de infectar las plantas ---- 1 = poner plantas infectadas  y 2= insectos portadores del virus
+# control es una variable categorica con 3 posibilidades --- c= control quimico, B= control biologico y N = ningun control
+# plants  originales 
+# Virus8 observacion de las plantas que tuvieron virus depues de 8 semanas
+
+class(tomato$Infest)  # para saber si esta tomando como variable scategoricas o no
+class(tomato$Control) # factor es que si es categorica
+levels(tomato$Control)
+contrasts(tomato$Control) # obtenenos un atabla donde se especifican los niveles y sus indicadores
+tomato$Infest <- as.factor(tomato$Infest) # la cambiamos a factor por que es entero y no tiene niveles y los ocupamos creo
+class(tomato$Infest)
+levels(tomato$Infest)
+
+mod.fit <- glm( Virus8/Plants  ~  Infest + Control, family = binomial(link = logit), tomato, weights = Plants)
+summary(mod.fit)
+# queremos ve rla proporcion de exitos
+# como el coeficiente de Infest es positivo la probabilida des positiva y aumenta 
+# cuando se incremneta el uso d eun quimico la probabilida disminuye 
+# y cuando no aplicamos control tambien aumenta creo
+
+```
+
