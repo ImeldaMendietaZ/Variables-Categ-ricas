@@ -1,0 +1,77 @@
+---
+title: "Clase 16"
+author: "ImeLDa Mendieta Z"
+date: "23 de marzo de 2018"
+output: pdf_document
+---
+
+```{r}
+..... CONTINUACIÓN 
+
+tomato <- read.csv("TomatoVirus.csv",header = TRUE, sep = ",")
+tomato
+# contrasts(Factor(tomato$Infest))  igual sirve para cambiar a la variable y que sea factor
+# tomato$Infest <- factor(tomato$Infest) Para cambiar la clase de la variable
+# nivel base s cuando se tiene n puros 0 en una fila
+
+temp <- factor(tomato$Control, levels = c("C", "B", "N")) # cmabia el orden de los niveles
+levels(temp)
+temp2 <- factor(tomato$Control, labels = c("B1", "C1", "N1")) # Cambio en el nombre de los niveles
+
+levels(temp2)
+
+mod.fit <- glm(Virus8/Plants ~ Infest + Control, binomial(link = logit), tomato, weights = Plants)
+summary(mod.fit)
+# probabilidad de que una planta desarrolle el virus es decreciente si se aplican quimicos
+# la probabilidad de que se desarrolle el virus aumenta si no se aplica ningun control
+# tabla de codificación 
+
+# interacciones y comparar
+# estimación d eun  modleo que permite interacciones
+mod.fit.inter <- glm((Virus8/Plants) ~ Infest + Control + Infest:Control, binomial(link = logit), tomato, weights = Plants)
+summary(mod.fit.inter)
+#Ho: B5 = B6=B7=B8
+#Ha: B5=! 0 o B6=!0 o B7=! 0 o B8=!0  hay al menos una diferente de 0
+# esas serian nuestras hipotesis
+
+library(car)
+Anova(mod.fit.inter) # hace la sinteracciones de este modleo con el de las interacciones
+# prueba LRT
+# se rechaza Ho o bien hay fuerte evidencia para rechazar la hipotesis nula 
+
+# Razón de momios
+# logit(pi) = Bo + B1*X1 + B2*x2 + B3*x3
+# log(pi/1-Pi) = 
+# Odds_x1=0=x2=x3 =Odds_nivelA = Bo 
+# Odds_x1=1,x2=0=x3  =Odds_nivelB = exp(Bo + B1)
+# Odds_nivelB/ Odds_nivelA = exp(B0+B1)/exp(Bo) = exp(B1) ~~comparar los momios del nivel A con los momios del nivel B # Comparar a los momios del nivel B con los del nivle C 
+# Odds_nivelB /Odds_nivelC = exp(Bo+ B1)/ exp(Bo+B2) = exp(B1 - B2)
+
+# Intervalos de confianza para la razon de momios
+mod.fit
+exp(mod.fit$coefficients[2]) # metodo dos con respecto al 1
+1/exp(mod.fit$coefficients[2]) # metodo de infeccion 1 con respecto al metodo de infeccion 2
+as.numeric(exp(mod.fit$coefficients[2])) # del metodo 2 con resécto al 1, cuando usamos el metodo 2 la probabilidad de  que la planta obtenga el virus es 1.24 veces
+1/as.numeric(exp(mod.fit$coefficients[2])) # del metodo 1 al metodo 2 
+attributes(mod.fit$coefficients[2])
+
+# intervalo de Wald ( de los momios solamente)
+exp(confint.default(mod.fit, parm = "Infest2", level = 0.95)) # confint.default por defecto calcula el intervalo de wald
+exp(confint.default(mod.fit, parm = "Infest1", level = 0.95))
+
+exp(mod.fit$coefficients[3:4])
+
+exp(confint.default(mod.fit, parm = c("ControlC", "ControlN"), level = 0.95))
+
+beta.hat <- mod.fit$coefficients[-1]
+exp(beta.hat[3]- beta.hat[2])
+
+cov.mat <- vcov(mod.fit)[2:4, 2:4]
+cov.mat
+var.N.C <- cov.mat[3,3] + cov.mat[2,2] - 2*cov.mat[3,2]
+CI.betas <- beta.hat[3] - beta.hat[2] + qnorm(p= c(0.025, 0.975))* sqrt(var.N.C)
+exp(CI.betas) # creecen entre un 300 y 500 %
+
+1/exp(CI.betas) # decrecen 
+
+```
