@@ -1,0 +1,52 @@
+X1 - categórica con I niveles
+X2 - categórica con J niveles
+
+X - 3 niveles (A,B,C)
+Z - 3 niveles (A,B,C)
+
+logit(pi) = Bo + B1*X1 + B2*X2 + B3*Z1 + B4*Z2 + B5*X1*Z1 + B6*X1*Z2 + B7*X2*Z1 + B8*X2*Z2
+
+OR (razón de momios) para comparar el nivel B vs nivel C de X en el nivel B de Z.
+
+OR = (Odds x1=1, X2=0, Z1=1, Z2=0)/(Odds x1=0, x2=1, Z1=1, z2=0)  = (exp(Bo+B1+B3+B5))/(exp(Bo+B2+B3+B7)) 
+  = exp(B1-B2+B5-B7)
+
+    z     x     OR
+  _________________________
+    A   B vs A  exp(B1)
+        C vs A  exp(B2)
+        B vs C  exp(B2-B1)
+  _________________________
+    B   B vs A
+        C vs A
+        B vs C
+  _________________________
+    C   B vs A
+        C vs A
+        B vs C
+        
+        
+```{r}
+tomato <- read.csv("TomatoVirus.csv",header = TRUE, sep = ",")
+
+mod.fit <- glm(Virus8/Plants ~ Infest + Control, binomial(link = logit), tomato, weights = Plants) # modelo sin inetraccion
+mod.fit.inter <- glm(Virus8/Plants ~ Infest + Control + Infest:Control, binomial(link = logit), tomato, weights = Plants) # modelo con inetraccion
+ # OR estimada para la variable " Control"
+beta.hat <- mod.fit.inter$coefficients[-1]
+N.B.Infest2.0 <- exp(beta.hat[3]) # no se aplica el metodo de infeccion 2 o se apica el metodo d einfeccion 1, podemos verificar que la asignación es buena 
+summary(mod.fit.inter)
+N.B.Infest2.1 <- exp(beta.hat[3] + beta.hat[5])
+N.B.Infest2.0 <- exp(beta.hat[2])
+C.B.Infest2.0 <- exp(beta.hat[])
+C.B.Infest2.1 <- exp(beta.hat[])
+N.C.Infest2.0 <- exp(beta.hat[])
+N.C.Infest2.1 <- exp(beta.hat[3]- beta.hat[2] + beta.hat[5]- beta.hat[4])
+
+
+```
+
+
+```{r}
+install.packages("minga")
+
+```
