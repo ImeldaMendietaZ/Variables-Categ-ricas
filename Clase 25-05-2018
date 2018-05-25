@@ -1,0 +1,120 @@
+# clase del 25/05/2018
+
+alldata <- read.csv("PolIdeolData.csv", sep = ",")
+alldata
+lin.score1 <- c(rep(x = c(1,2,3,4,5),times = 4))
+lin.score2 <- c(rep(x = c(0,2,3,4,6),times = 4))
+extrem.score <- c(rep(x = c(2,1,0,1,2),times = 4))
+alldata <- data.frame(alldata, lin.score1, lin.score2, extrem.score)
+View(alldata)
+
+# Modelo Homogéneo en PI: (ideología política) Puntuación 1,2,3,4,5
+
+mod.homo.lin1.PI <- glm( count ~ gender*party + gender*ideol + party*lin.score1, poisson(link = "log"), data = alldata )
+summary(mod.homo.lin1.PI)
+
+# partyR:lin.score1  0.43058    0.06005   7.170 7.48e-13 ***   >>>>  es significativa para el modelo
+install.packages("car")
+library(car)
+
+Anova(mod.homo.lin1.PI)
+
+
+
+# hay evidencia significativa para el modelo con gende, ideol y party:lin.score1
+
+
+contr.mat <- rbind(c(rep(0, 7), 1, 0, 0, 0, 0, 0), 
+                   c(rep(0, 7), 0,-1, 0, 1, 0, 0),
+                   c(rep(0, 7), 0, 0, 0, 1, 0, 0),
+                   c(rep(0, 7), 0, 0,-1, 1, 0, 0),
+                   c(rep(0, 7), 0, 0, 0, 1,-1, 0),
+                   c(rep(0, 7), 0, 1, 0, 0, 0, 0),
+                   c(rep(0, 7), 0, 1,-1, 0, 0, 0),
+                   c(rep(0, 7), 0, 1, 0, 0,-1, 0),
+                   c(rep(0, 7), 0, 0,-1, 0, 0, 0),
+                   c(rep(0, 7), 0, 0, 0, 0,-1, 0),
+                   c(rep(0, 7), 0, 0, 1, 0,-1, 0),
+                   c(rep(0, 7), 0, 0, 0, 0, 0, 1),
+                   c(rep(0, 7), 0, 0, 0, 0, 0, 2),
+                   c(rep(0, 7), 0, 0, 0, 0, 0, 3),
+                   c(rep(0, 7), 0, 0, 0, 0, 0, 4)
+)
+
+check.na <- is.na(mod.homo.lin1.PI$coefficients)
+mod.homo.lin1.PI$coefficients <- mod.homo.lin1.PI$coefficients[!check.na]
+
+# paraa los intervalos de Wald
+
+install.packages("multcomp")
+library(multcomp)
+wald <- glht(mod.homo.lin1.PI, linfct = contr.mat)
+wald.ci <- round(exp(confint(wald, calpha = qnorm(0.975))$confint), 2)
+row.names(wald.ci) <- c("GP Rep | M:F", "GI VC:SC | M:F", "GI VC:M | M:F", "GI VC:SL | M:F", "GI VC:VL | M:F", "GI SC:M | M:F", "GI SC:SL | M:F", "GI SC:VL | M:F", "GI M:SL | M:F", "GI M:VL | M:F", "GI SL:VL | M:F", "PI REP | 1 Cat Ideol", "PI REP | 2 Cat Ideol", "PI REP | 3 Cat Ideol", "PI REP | 4 Cat Ideol")
+colnames(wald.ci) <- c("Estimate", "Lower CI", "Upper CI")
+wald.ci
+
+
+# Modelo de Asociación Homogénea GI, PI: 
+mod.hom # ya lo teniamos 
+
+
+# intervalos de forma manual
+beta <- matrix(coef(mod.homo.lin1.PI), ncol = 1)
+beta
+v.beta <- vcov(mod.homo.lin1.PI)
+v.beta
+log.contrasts <- contr.mat %*% beta  # %*% sirve para poder multiplicar matrices
+log.contrasts
+SElog.contrasts <- matrix(sqrt(diag(contr.mat %*% v.beta %*% t(contr.mat) )), ncol = 1) # error 
+
+alpha <- 0.05
+lower.log <- log.contrasts + qnorm(alpha/2)*SElog.contrasts
+upper.log <- log.contrasts + qnorm(1-alpha/2)*SElog.contrasts
+
+wald.ci.1 <- round( data.frame(exp(log.contrasts), exp(lower.log), exp(upper.log)),digits = 2)
+wald.ci.1
+
+# ahora si comparamos los modelos, el que ya teniamos y el que acabamos de ajustar
+
+anova(mod.homo.lin1.PI, mod.hom , test = "Chisq")
+
+# Ho: Modelo de asociación homogenea ajusta mejor   ### no estoy segura
+# No hay suficiente evidencia para decir que en el modelo las interaciones aportan o ajustan el modelo
+
+
+# log(ri) = log(Mi/ti)
+#         log(mi) = log(ti) + Bo + B1 * X1i + ... + Bp * Xpi
+#  >>> Mi = ti * exp()
+
+# Necesitamos hacer uso de los estimadores de maxima verosimilitud
+
+__________________________________________________________________________________________________________________
+
+eggdata <- read.table("BeetleEggCrowding.txt", header = TRUE) # TRT nos da el numero de hembras
+View(eggdata)
+
+aggregate(formula = NumEggs ~ TRT + Temp, data = eggdata, FUN = mean, subset = TRT == "I")
+
+aggregate(formula = NumEggs ~ TRT + Temp, data = eggdata, FUN = mean, subset = TRT == "G")
+
+# modelo usando tempratura, agrupamiento (TRT) e interacción entre ambas variables
+eggdata$females <- ifelse(test = eggdata$TRT == "I", yes = 1, no = 5)
+View(eggdata)
+eggmod1 <- glm( NumEggs ~ Temp*TRT, family = poisson(link = "log") , offset = log(females) , data = eggdata)
+round(summary(eggmod1)$coefficients, 3) 
+
+# con una sola hembra parece aumentar la tasa de huevos
+# si se hace una tasa de tasas media parace incrementarse a temperaturas más bajas
+# TASA MEDIA (con temp = 21)
+
+exp(-7.955 + 21*0.347 + 7.795 - 0.279*21)
+# el valor respresenta la media de huevos con una sola hembra a una temperatura de 21°
+# lo anteriror fue de forma manual
+
+# ahora definimos:
+
+newdata <- data.frame(TRT = c("G", "I", "G", "I"), Temp = c(21,21, 24, 24), females = c(1,5,1,5))
+mu.hat <- round(predict(object = eggmod1, newdata = newdata, ttype = "response"), 2)
+data.frame(newdata, mu.hat, rate = mu.hat/newdata$females)
+# esta mal, REVISAARRRRRRR
